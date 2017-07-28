@@ -10,8 +10,8 @@ public class TestClient {
     public static void main(String[] args) throws InterruptedException {
         SendFrame frame = SendFrame.getInstance();
         frame.start();
-        Opservice opservice = (Opservice) ProxyFactory.getProxy(Opservice.class);
-        opservice.sum(1,3);
+        OpService opService = (OpService) ProxyFactory.getProxy(OpService.class);
+        opService.sum(1,3);
 
 
 
