@@ -2,8 +2,10 @@ package com.cprc.core;
 
 import com.cprc.core.execute.SendExecute;
 import com.cprc.core.handler.SendHandler;
+import com.cprc.model.EventMsg;
+import com.cprc.model.ListerMsg;
+import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.*;
-import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
@@ -21,16 +23,19 @@ public class SendFrame {
 
     private ConcurrentHashMap<String, SendHandler> channelHandlerMap = new ConcurrentHashMap<String, SendHandler>();
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private ListeningExecutorService pool = MoreExecutors.listeningDecorator(executorService);
 
     private Lock lock = new ReentrantLock();
 
     private Condition condition = lock.newCondition();
 
-    private BlockingQueue<SendHandler> queue = new ArrayBlockingQueue<SendHandler>(10);
-    private BlockingQueue<Channel> queue2 = new ArrayBlockingQueue<Channel>(10);
+    private  BlockingQueue<SendHandler> queue = new ArrayBlockingQueue<SendHandler>(1000);
 
+    private static EventBus eventBus = new EventBus();
+    static {
+        eventBus.register(new ListerMsg(eventBus));
+    }
 
     private SendFrame() {
     }
@@ -41,8 +46,9 @@ public class SendFrame {
 
     static final EventLoopGroup work = new NioEventLoopGroup();
 
-    public void start() {
-        ListenableFuture future = pool.submit(new SendExecute("127.0.0.1", 9090, work));
+    public void start(String ip,int port) {
+
+        ListenableFuture future = pool.submit(new SendExecute(ip, port, work));
         Futures.addCallback(future, new FutureCallback<Boolean>() {
             public void onSuccess(Boolean result) {
             }
@@ -67,29 +73,18 @@ public class SendFrame {
 
     public SendHandler getChannelHandler() {
         try {
-            return queue.poll(10000, TimeUnit.MILLISECONDS);
+            SendHandler sendHandler = queue.poll(10000, TimeUnit.MILLISECONDS);
+            return sendHandler;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public void setChannelHandler(Channel channel) {
-        try {
-            queue2.put(channel);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void postEvent(){
+        eventBus.post(new EventMsg());
     }
 
-    public Channel getChannel() {
-        try {
-            return queue2.poll(10000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
     public void stopLoopGroup() {
         work.shutdownGracefully();
         pool.shutdown();

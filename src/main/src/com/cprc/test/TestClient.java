@@ -9,12 +9,34 @@ import com.cprc.core.SendFrame;
 public class TestClient {
     public static void main(String[] args) throws InterruptedException {
         SendFrame frame = SendFrame.getInstance();
-        frame.start();
         OpService opService = (OpService) ProxyFactory.getProxy(OpService.class);
-        opService.sum(1,3);
-
+        for(int i=0;i<100;i++){
+            frame.start("127.0.0.1",9090);
+            new Thread(new TestThread(opService,i,i+2)).start();
+        }
 
 
        System.out.println("down");
+    }
+
+    static class TestThread implements Runnable{
+
+        OpService opService;
+
+        int i;
+        int j;
+
+        public TestThread(OpService opService,int i ,int j){
+            this.opService = opService;
+            this.i = i;
+            this.j = j;
+        }
+
+
+        public void run() {
+            System.out.println(Thread.currentThread().getName()+"->"+"{"+i+","+j+"}"+opService.sum(i,j));
+        }
+
+
     }
 }

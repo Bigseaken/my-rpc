@@ -1,6 +1,8 @@
 package com.cprc.core.handler;
 
+import com.cprc.core.SendFrame;
 import com.cprc.model.CallBack;
+import com.cprc.model.EventMsg;
 import com.cprc.model.Request;
 import com.cprc.model.Respone;
 import io.netty.channel.Channel;
@@ -26,6 +28,10 @@ public class SendHandler extends SimpleChannelInboundHandler<Respone> {
     protected void channelRead0(ChannelHandlerContext ctx, Respone msg) throws Exception {
         Object result = msg.getResult();
         CallBack callBack = callBackMap.get(msg.getId());
+        callBackMap.remove(msg.getId());
+//        if(callBackMap.isEmpty()){
+//            SendFrame.getInstance().postEvent();
+//        }
         callBack.setId(msg.getId());
         callBack.setData(result);
     }
@@ -38,9 +44,10 @@ public class SendHandler extends SimpleChannelInboundHandler<Respone> {
     }
 
     public CallBack sendReqest(Request request) {
-        channel.writeAndFlush(request);
+
         CallBack callBack = new CallBack();
         callBackMap.put(request.getId(),callBack);
+        channel.writeAndFlush(request);
         return callBack;
     }
 }

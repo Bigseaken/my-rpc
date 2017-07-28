@@ -35,13 +35,11 @@ public class ProxyFactory implements InvocationHandler {
         request.setMethodName(method.getName());
         request.setArg(args);
         request.setClassz(method.getDeclaringClass().getName());
-//        SendHandler sendHandler =  SendFrame.getInstance().getChannelHandler(requestId);
         SendFrame frame = SendFrame.getInstance();
         SendHandler sendHandler =  frame.getChannelHandler();
         CallBack callBack = sendHandler.sendReqest(request);
 
         Object result = callBack.getData();
-        frame.stopLoopGroup();
         return result;
     }
 
