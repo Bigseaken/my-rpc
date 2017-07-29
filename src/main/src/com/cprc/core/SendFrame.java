@@ -9,39 +9,31 @@ import com.google.common.util.concurrent.*;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by withqianqian@163.com on 2017/7/28.
  */
 public class SendFrame {
 
-    private final static SendFrame sendFrame = new SendFrame();
 
-    private ConcurrentHashMap<String, SendHandler> channelHandlerMap = new ConcurrentHashMap<String, SendHandler>();
 
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
     private ListeningExecutorService pool = MoreExecutors.listeningDecorator(executorService);
 
-    private Lock lock = new ReentrantLock();
-
-    private Condition condition = lock.newCondition();
 
     private  BlockingQueue<SendHandler> queue = new ArrayBlockingQueue<SendHandler>(1000);
 
-    private static EventBus eventBus = new EventBus();
-    static {
-        eventBus.register(new ListerMsg(eventBus));
-    }
+    private  EventBus eventBus = new EventBus();
 
     private SendFrame() {
     }
 
     public static SendFrame getInstance() {
-        return sendFrame;
+
+        return Inner.INSTANCE;
     }
 
     static final EventLoopGroup work = new NioEventLoopGroup();
@@ -81,6 +73,10 @@ public class SendFrame {
         return null;
     }
 
+    public void registerEvent(){
+        eventBus.register(new ListerMsg(eventBus));
+    }
+
     public void postEvent(){
         eventBus.post(new EventMsg());
     }
@@ -88,6 +84,10 @@ public class SendFrame {
     public void stopLoopGroup() {
         work.shutdownGracefully();
         pool.shutdown();
+    }
+
+    private static class Inner{
+       private final static SendFrame INSTANCE = new SendFrame();
     }
 
 }

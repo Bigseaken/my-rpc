@@ -11,4 +11,6 @@
     <bean id="opService" class="com.cprc.test.OpServiceImpl"></bean>
 
 
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
+    <bean id="assist" class="com.cprc.Assist"></bean>
 </beans>

@@ -29,9 +29,6 @@ public class SendHandler extends SimpleChannelInboundHandler<Respone> {
         Object result = msg.getResult();
         CallBack callBack = callBackMap.get(msg.getId());
         callBackMap.remove(msg.getId());
-//        if(callBackMap.isEmpty()){
-//            SendFrame.getInstance().postEvent();
-//        }
         callBack.setId(msg.getId());
         callBack.setData(result);
     }
