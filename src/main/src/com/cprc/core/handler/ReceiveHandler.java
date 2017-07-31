@@ -2,6 +2,7 @@ package com.cprc.core.handler;
 
 import com.cprc.model.Request;
 import com.cprc.model.Respone;
+import com.cprc.utils.CacheUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.commons.lang3.reflect.MethodUtils;
@@ -30,6 +31,10 @@ public class ReceiveHandler extends SimpleChannelInboundHandler<Request> {
         if (context != null) {
             //获取对应service的实现类 实现类的id为service的名称
             //没有做service 与实现类的映射
+            if(CacheUtils.contains(id)){
+                ctx.writeAndFlush(CacheUtils.getCache(id));
+                return;
+            }
             String serviceName = classz;
             int implNameIndex = serviceName.lastIndexOf(".");
             serviceName = serviceName.substring(implNameIndex + 1);
@@ -41,6 +46,7 @@ public class ReceiveHandler extends SimpleChannelInboundHandler<Request> {
 
             respone.setId(id);
             respone.setResult(result);
+            CacheUtils.put(id,respone);
             ctx.writeAndFlush(respone);
         } else {
             throw new IllegalArgumentException("application is not be null");

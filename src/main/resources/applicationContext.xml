@@ -8,7 +8,7 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <bean id="opService" class="com.cprc.test.OpServiceImpl"></bean>
+    <bean id="opService" class="com.cprc.test.OpServiceImpl" lazy-init="true"></bean>
 
 
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor" />
